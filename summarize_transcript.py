@@ -23,7 +23,7 @@ def create_chunks(transcript):
     chunk = ""
     for dialogue in dialogues:
         chunk += dialogue
-        if len(chunk) > 6000:
+        if len(chunk) > max_chunk_size:
             chunks.append(chunk)
             chunk = ""
     return chunks
@@ -64,13 +64,13 @@ if __name__ == "__main__":
     try:
         for chunk in chunks:
             prompt = args.prompt + "\n" + chunk + "\n" + default_stop
-            output_summary += gpt_summarize(prompt, max_tokens=1000)  # Summarizing each chunk separately to get a initial moderate summary of the transcript
+            output_summary += gpt_summarize(prompt, max_tokens=1000).strip()  # Summarizing each chunk separately to get a initial moderate summary of the transcript
 
         write_file("detailed_" + args.output_file, output_summary)
 
         # Summarizing all the chuck summaries together to get a more concise summary
         prompt = "write very detailed summary of the below text by preserving all the statistical and important information: \n" + output_summary + "\n" + default_stop
-        output_summary = gpt_summarize(prompt, max_tokens=args.length, best_of=3)
+        output_summary = gpt_summarize(prompt, max_tokens=args.length, best_of=3, temperature=0.4)
         output_summary = output_summary.strip()
         output_summary = output_summary.replace("\n", " ")
         write_file(args.output_file, output_summary)
